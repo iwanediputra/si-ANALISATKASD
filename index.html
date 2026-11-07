@@ -1,5 +1,15 @@
 <!DOCTYPE html>
 <html lang="id">
+    <!-- Supabase JS Client Library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  // Ganti dengan URL & Anon Key dari Langkah 3
+  const SUPABASE_URL = "https://ifcpljvcwpmvudrctyxp.supabase.co/rest/v1/";
+  const SUPABASE_KEY = "sb_publishable_Ge-JiygM3GvHpuEas_Ubog_bFljUkJZ";
+  
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
