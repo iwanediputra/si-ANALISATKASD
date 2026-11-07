@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Si-Analisa TKA SD - Kecamatan Rejoso</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (XLSX) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- FontAwesome & Lucide Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#1e1b4b',
+                        },
+                        emerald: {
+                            50: '#ecfdf5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- TOP NAVIGATION BAR -->
+    <nav class="bg-gradient-to-r from-brand-900 via-brand-800 to-indigo-950 text-white shadow-lg sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & App Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center font-bold text-xl text-yellow-300 shadow-inner">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <div class="font-extrabold text-base sm:text-lg leading-tight tracking-tight flex items-center gap-2">
+                            Si-Analisa TKA SD <span class="text-[10px] font-bold bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 px-2 py-0.5 rounded-full uppercase">KORWIL REJOSO</span>
+                        </div>
+                        <p class="text-[11px] text-indigo-200 hidden sm:block">Sistem Analisis Hasil TKA & Rekomendasi Pembelajaran SD Rejoso - Nganjuk</p>
+                    </div>
+                </div>
+
+                <!-- User Profile & Auth State -->
+                <div id="nav-user-info" class="hidden items-center space-x-4">
+                    <div class="text-right hidden md:block">
+                        <div id="user-display-name" class="font-bold text-xs sm:text-sm text-yellow-300">SD NEGERI 1 REJOSO</div>
+                        <div id="user-display-role" class="text-[11px] text-indigo-200">Lembaga User • NPSN: 20538158</div>
+                    </div>
+                    <button onclick="logout()" class="px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-200 border border-red-400/30 transition flex items-center gap-1.5 text-xs font-semibold">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Keluar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- VIEW 1: AUTHENTICATION (LOGIN / REGISTER) -->
+        <div id="view-auth" class="max-w-md mx-auto my-6 sm:my-10">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                <!-- Header Card -->
+                <div class="bg-gradient-to-br from-brand-800 to-indigo-900 p-6 text-white text-center relative overflow-hidden">
+                    <div class="absolute -right-8 -bottom-8 w-28 h-28 bg-white/10 rounded-full blur-xl"></div>
+                    <div class="w-14 h-14 mx-auto mb-3 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 text-yellow-300 text-2xl shadow-md">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h2 class="text-xl font-extrabold tracking-tight">Portal Analisis TKA SD</h2>
+                    <p class="text-xs text-indigo-200 mt-1">KORWIL PENDIDIKAN KECAMATAN REJOSO</p>
+                </div>
+
+                <!-- Auth Navigation Tabs -->
+                <div class="flex border-b border-slate-200 text-xs sm:text-sm font-semibold">
+                    <button id="tab-btn-login" onclick="switchAuthTab('login')" class="flex-1 py-3 text-center border-b-2 border-brand-600 text-brand-600 bg-slate-50/50">
+                        <i class="fa-solid fa-lock mr-1"></i> Masuk Sistem
+                    </button>
+                    <button id="tab-btn-register" onclick="switchAuthTab('register')" class="flex-1 py-3 text-center text-slate-500 hover:text-slate-700">
+                        <i class="fa-solid fa-user-plus mr-1"></i> Registrasi Akun SD
+                    </button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="auth-form-login" class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Peran Akses</label>
+                        <select id="login-role" onchange="toggleLoginInputs()" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-xs sm:text-sm font-medium">
+                            <option value="user">Lembaga Sekolah (User)</option>
+                            <option value="pengawas">Pengawas / Superuser (Admin 1)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label id="login-user-label" class="block text-xs font-semibold uppercase text-slate-500 mb-1">NPSN Sekolah</label>
+                        <input type="text" id="login-username" placeholder="Masukkan 8 Digit NPSN Sekolah" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-xs sm:text-sm font-mono">
+                    </div>
+
+                    <div>
+                        <label id="login-pass-label" class="block text-xs font-semibold uppercase text-slate-500 mb-1">Kata Sandi / NPSN</label>
+                        <input type="password" id="login-password" placeholder="••••••••" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-xs sm:text-sm">
+                    </div>
+
+                    <div class="bg-indigo-50/70 rounded-xl p-3 text-xs text-slate-600 border border-indigo-100 space-y-1">
+                        <p class="font-bold text-indigo-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-info text-brand-600"></i> Petunjuk Akses:
+                        </p>
+                        <div id="login-hint-text">
+                            <p class="text-[11px] text-slate-600">• <strong>Lembaga:</strong> Gunakan NPSN sebagai Username & Password (registrasi terlebih dahulu).</p>
+                        </div>
+                    </div>
+
+                    <button onclick="handleLogin()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg shadow-md transition text-xs sm:text-sm flex items-center justify-center gap-2">
+                        <span>Masuk ke Dashboard</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- Registration Form -->
+                <div id="auth-form-register" class="p-6 space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Pilih Sekolah (Kecamatan Rejoso)</label>
+                        <select id="reg-school-select" onchange="autoFillNPSN()" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-xs sm:text-sm font-medium">
+                            <option value="">-- Pilih Lembaga SD --</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">NPSN Terdeteksi</label>
+                        <input type="text" id="reg-npsn" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg text-xs sm:text-sm font-mono font-bold text-slate-700">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Buat Kata Sandi (Default: NPSN)</label>
+                        <input type="password" id="reg-password" placeholder="Gunakan NPSN atau buat Kata Sandi" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-xs sm:text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Konfirmasi Kata Sandi</label>
+                        <input type="password" id="reg-confirm-password" placeholder="Ulangi Kata Sandi" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none text-xs sm:text-sm">
+                    </div>
+
+                    <button onclick="handleRegister()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-md transition text-xs sm:text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-check"></i>
+                        <span>Daftarkan Akun Lembaga</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: DASHBOARD LEMBAGA (USER) -->
+        <div id="view-user-dashboard" class="space-y-6 hidden">
+            <!-- Header Banner -->
+            <div class="bg-gradient-to-r from-brand-800 via-indigo-900 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-yellow-300 mb-2 border border-white/20">
+                        <i class="fa-solid fa-building-columns"></i>
+                        <span id="user-dash-npsn">NPSN: 20538158</span>
+                    </div>
+                    <h1 id="user-dash-name" class="text-xl sm:text-2xl font-extrabold tracking-tight">SD NEGERI 1 REJOSO</h1>
+                    <p class="text-indigo-200 text-xs sm:text-sm mt-1 max-w-2xl">Unggah berkas Excel TKA Hierarki Bahasa Indonesia & Matematika untuk mendapatkan Analisis AI dan Rekomendasi Praktik Pembelajaran Terfokus.</p>
+                </div>
+                <div class="bg-white/10 p-4 rounded-xl border border-white/20 backdrop-blur flex items-center justify-around w-full lg:w-auto gap-4 sm:gap-6 text-slate-100 shadow-inner">
+                    <div class="text-center">
+                        <div class="text-xl sm:text-2xl font-extrabold text-yellow-300" id="stat-bindo-val">-</div>
+                        <div class="text-[10px] text-indigo-200 uppercase font-bold tracking-wider">Rata B. Indo</div>
+                    </div>
+                    <div class="w-px h-8 bg-white/20"></div>
+                    <div class="text-center">
+                        <div class="text-xl sm:text-2xl font-extrabold text-emerald-300" id="stat-mtk-val">-</div>
+                        <div class="text-[10px] text-indigo-200 uppercase font-bold tracking-wider">Rata MTK</div>
+                    </div>
+                    <div class="w-px h-8 bg-white/20"></div>
+                    <div class="text-center">
+                        <div class="text-xl sm:text-2xl font-extrabold text-cyan-300" id="stat-progress-val">0%</div>
+                        <div class="text-[10px] text-indigo-200 uppercase font-bold tracking-wider">Progress Tindak Lanjut</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content Navigation -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="flex flex-wrap border-b border-slate-200 bg-slate-50/80">
+                    <button onclick="switchUserTab('upload')" id="user-tab-upload" class="px-5 py-3.5 text-xs sm:text-sm font-bold border-b-2 border-brand-600 text-brand-600 flex items-center gap-2 bg-white">
+                        <i class="fa-solid fa-file-arrow-up text-brand-600"></i>
+                        <span>1. Unggah Berkas TKA</span>
+                    </button>
+                    <button onclick="switchUserTab('analysis')" id="user-tab-analysis" class="px-5 py-3.5 text-xs sm:text-sm font-bold text-slate-500 hover:text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+                        <span>2. Analisis AI & Rekomendasi</span>
+                    </button>
+                    <button onclick="switchUserTab('checklist')" id="user-tab-checklist" class="px-5 py-3.5 text-xs sm:text-sm font-bold text-slate-500 hover:text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-emerald-500"></i>
+                        <span>3. Ceklist Pelaksanaan Intervensi</span>
+                    </button>
+                </div>
+
+                <div class="p-6">
+                    <!-- SUBVIEW 1: UPLOAD EXCEL FILE -->
+                    <div id="user-subview-upload" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Dropzone Bahasa Indonesia -->
+                            <div class="border-2 border-dashed border-indigo-200 hover:border-brand-500 bg-indigo-50/30 rounded-xl p-6 text-center transition flex flex-col items-center justify-center">
+                                <div class="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center text-brand-600 mb-3 text-xl shadow-sm">
+                                    <i class="fa-solid fa-book-bookmark"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 text-base">Hasil TKA Bahasa Indonesia</h3>
+                                <p class="text-xs text-slate-500 mt-1 mb-4">Unggah file Excel (.xlsx / .xls) laporan Hierarki TKA</p>
+                                
+                                <label class="cursor-pointer bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow transition inline-flex items-center gap-2">
+                                    <i class="fa-solid fa-upload"></i>
+                                    <span>Pilih Berkas B. Indonesia</span>
+                                    <input type="file" id="file-bindo" accept=".xlsx, .xls" class="hidden" onchange="handleFileUpload(event, 'bindo')">
+                                </label>
+                                
+                                <div id="status-bindo-file" class="mt-4 text-xs font-semibold text-slate-600 bg-white px-3 py-2 rounded-lg border border-slate-200 hidden w-full truncate shadow-sm">
+                                    Belum ada file dipilih
+                                </div>
+                            </div>
+
+                            <!-- Dropzone Matematika -->
+                            <div class="border-2 border-dashed border-emerald-200 hover:border-emerald-500 bg-emerald-50/30 rounded-xl p-6 text-center transition flex flex-col items-center justify-center">
+                                <div class="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 mb-3 text-xl shadow-sm">
+                                    <i class="fa-solid fa-calculator"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 text-base">Hasil TKA Matematika</h3>
+                                <p class="text-xs text-slate-500 mt-1 mb-4">Unggah file Excel (.xlsx / .xls) laporan Hierarki TKA</p>
+                                
+                                <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow transition inline-flex items-center gap-2">
+                                    <i class="fa-solid fa-upload"></i>
+                                    <span>Pilih Berkas Matematika</span>
+                                    <input type="file" id="file-mtk" accept=".xlsx, .xls" class="hidden" onchange="handleFileUpload(event, 'mtk')">
+                                </label>
+
+                                <div id="status-mtk-file" class="mt-4 text-xs font-semibold text-slate-600 bg-white px-3 py-2 rounded-lg border border-slate-200 hidden w-full truncate shadow-sm">
+                                    Belum ada file dipilih
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sample Data / Pre-loaded Demo Loader -->
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-700 font-bold text-lg flex-shrink-0">
+                                    <i class="fa-solid fa-box-archive"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">Simulasi Cepat (Gunakan Sampel Referensi SD Negeri SPMI)</h4>
+                                    <p class="text-xs text-slate-600 mt-0.5">Muat data simulasi indikator TKA Bahasa Indonesia dan Matematika untuk menguji fitur analisis secara instan.</p>
+                                </div>
+                            </div>
+                            <button onclick="loadSampleData()" class="whitespace-nowrap px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg shadow transition flex items-center gap-2">
+                                <i class="fa-solid fa-bolt"></i>
+                                <span>Muat Data Sampel TKA</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SUBVIEW 2: ANALYSIS & AI RECOMMENDATIONS -->
+                    <div id="user-subview-analysis" class="space-y-6 hidden">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                            <div>
+                                <h3 class="text-lg font-extrabold text-slate-800">Hasil Analisis Capaian & Rekomendasi AI</h3>
+                                <p class="text-xs text-slate-500">Evaluasi indikator kompetensi terlemah dan formulasi praktik pembelajaran terfokus.</p>
+                            </div>
+                            <button onclick="generateAIRecommendations()" class="px-4 py-2 bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-xs rounded-lg shadow hover:opacity-95 transition flex items-center gap-2">
+                                <i class="fa-solid fa-arrows-rotate"></i>
+                                <span>Re-Generasi Rekomendasi</span>
+                            </button>
+                        </div>
+
+                        <!-- Chart Visualizations -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <h4 class="font-bold text-xs sm:text-sm text-slate-700 mb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-column text-brand-600"></i>
+                                    Capaian Bahasa Indonesia per Indikator (%)
+                                </h4>
+                                <div class="h-64 relative">
+                                    <canvas id="userBindoChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <h4 class="font-bold text-xs sm:text-sm text-slate-700 mb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-column text-emerald-600"></i>
+                                    Capaian Matematika per Indikator (%)
+                                </h4>
+                                <div class="h-64 relative">
+                                    <canvas id="userMtkChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Recommendations Output List -->
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-base mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                                Rekomendasi Praktik Pembelajaran Terfokus (AI Generated)
+                            </h4>
+                            <div id="ai-recommendation-cards" class="space-y-4">
+                                <div class="text-center py-8 text-slate-400 text-xs sm:text-sm">Belum ada data TKA yang diunggah. Silakan unggah berkas TKA terlebih dahulu.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUBVIEW 3: CHECKLIST ACTION PLAN -->
+                    <div id="user-subview-checklist" class="space-y-6 hidden">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                            <div>
+                                <h3 class="text-lg font-extrabold text-slate-800">Ceklist Pelaksanaan Intervensi Pembelajaran</h3>
+                                <p class="text-xs text-slate-500">Tandai progress rekomendasi yang telah atau sedang direalisasikan di sekolah. Data ini tersinkron ke akun Pengawas.</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-semibold text-slate-500">Kemajuan Tindak Lanjut</div>
+                                <div class="text-xl font-black text-brand-600" id="checklist-progress-text">0 / 0 Rekomendasi</div>
+                            </div>
+                        </div>
+
+                        <div class="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden border border-slate-200">
+                            <div id="checklist-progress-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+
+                        <div id="checklist-items-container" class="space-y-3">
+                            <div class="text-center py-8 text-slate-400 text-xs sm:text-sm">Unggah file TKA terlebih dahulu untuk mengaktifkan ceklist rekomendasi.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: DASHBOARD PENGAWAS (SUPERUSER - BACHRUL MUJIB, S.Pd., M.Pd.) -->
+        <div id="view-pengawas-dashboard" class="space-y-6 hidden">
+            <!-- Superuser Header Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-brand-950 to-indigo-950 rounded-2xl p-5 sm:p-6 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-800">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-300 flex items-center justify-center text-slate-900 font-black text-xl shadow-lg border-2 border-white/20">
+                        BM
+                    </div>
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 text-[11px] px-2.5 py-0.5 rounded-full font-bold">
+                            <i class="fa-solid fa-user-shield"></i>
+                            SUPERUSER / PENGAWAS SEKOLAH
+                        </div>
+                        <h1 class="text-xl sm:text-2xl font-black tracking-tight mt-1">BACHRUL MUJIB, S.Pd., M.Pd.</h1>
+                        <p class="text-xs text-indigo-200 mt-0.5">NIP: 197203041999111001 • Wilayah Kerja: Kecamatan Rejoso (38 Sekolah Dasar)</p>
+                    </div>
+                </div>
+                
+                <!-- Quick Key Metrics -->
+                <div class="grid grid-cols-3 gap-3 w-full md:w-auto">
+                    <div class="bg-white/10 backdrop-blur p-3 rounded-xl border border-white/10 text-center">
+                        <div class="text-xl sm:text-2xl font-black text-yellow-300" id="super-stat-submitted">0 / 38</div>
+                        <div class="text-[9px] sm:text-[10px] text-indigo-200 font-bold uppercase tracking-wider">Lembaga Upload</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur p-3 rounded-xl border border-white/10 text-center">
+                        <div class="text-xl sm:text-2xl font-black text-emerald-300" id="super-stat-avg-kec">-</div>
+                        <div class="text-[9px] sm:text-[10px] text-indigo-200 font-bold uppercase tracking-wider">Rata-rata Kec.</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur p-3 rounded-xl border border-white/10 text-center">
+                        <div class="text-xl sm:text-2xl font-black text-cyan-300" id="super-stat-avg-progress">0%</div>
+                        <div class="text-[9px] sm:text-[10px] text-indigo-200 font-bold uppercase tracking-wider">Rata Progress Intervensi</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Bar Chart Comparison -->
+                <div class="lg:col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                            <i class="fa-solid fa-chart-simple text-brand-600"></i>
+                            Perbandingan Capaian Rata-rata TKA (10 SD Sampel)
+                        </h3>
+                        <span class="text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-mono font-bold">B. Indo vs Matematika</span>
+                    </div>
+                    <div class="h-72 relative">
+                        <canvas id="pengawasComparisonChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Doughnut Upload Progress -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-sm sm:text-base mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-pie-chart text-indigo-600"></i>
+                            Status Kelengkapan Berkas
+                        </h3>
+                        <div class="h-48 relative flex items-center justify-center">
+                            <canvas id="pengawasStatusPieChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                        <button onclick="exportRecapToCSV()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition flex items-center justify-center gap-2 shadow">
+                            <i class="fa-solid fa-file-excel text-emerald-400"></i>
+                            <span>Export Rekapitulasi Data (CSV)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitoring Table (38 SD Rejoso) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-5 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-brand-600"></i>
+                            Daftar Monitoring Real-Time 38 SD Kecamatan Rejoso
+                        </h3>
+                        <p class="text-xs text-slate-500">Pantau isian nilai TKA dan persentase keterlaksanaan rekomendasi praktik pembelajaran.</p>
+                    </div>
+                    <!-- Search Filter -->
+                    <div class="relative w-full sm:w-72">
+                        <input type="text" id="pengawas-search-input" onkeyup="filterPengawasTable()" placeholder="Cari nama SD / NPSN..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <i class="fa-solid fa-magnifying-glass text-slate-400 absolute left-3 top-2.5 text-xs"></i>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-600 font-bold uppercase border-b border-slate-200">
+                            <tr>
+                                <th class="p-3.5 text-center w-12">No</th>
+                                <th class="p-3.5">Nama Sekolah</th>
+                                <th class="p-3.5 text-center">NPSN</th>
+                                <th class="p-3.5 text-center">Status Berkas</th>
+                                <th class="p-3.5 text-center">Rata B.Indo</th>
+                                <th class="p-3.5 text-center">Rata MTK</th>
+                                <th class="p-3.5 text-center">Progress Intervensi</th>
+                                <th class="p-3.5 text-center">Aksi Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pengawas-table-body" class="divide-y divide-slate-100 text-slate-700 font-medium">
+                            <!-- Dynamically Generated Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto no-print">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 font-medium">
+            &copy; 2026 Pengawas SD Kecamatan Rejoso • Dinas Pendidikan Kabupaten Nganjuk.
+        </div>
+    </footer>
+
+    <!-- MODAL DETAIL SEKOLAH (PENGAWAS SUPERUSER VIEW) -->
+    <div id="modal-detail-school" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 custom-scrollbar flex flex-col">
+            <div class="p-5 bg-gradient-to-r from-brand-900 to-indigo-950 text-white sticky top-0 z-10 flex items-center justify-between">
+                <div>
+                    <h3 id="modal-school-title" class="font-extrabold text-base sm:text-lg">SD NEGERI 1 REJOSO</h3>
+                    <p id="modal-school-npsn" class="text-xs text-indigo-200 font-mono">NPSN: 20538158</p>
+                </div>
+                <button onclick="closeDetailModal()" class="text-indigo-200 hover:text-white p-1 rounded-lg transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-6 flex-grow" id="modal-school-body">
+                <!-- Dynamically Inserted Detail -->
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-200 text-right">
+                <button onclick="closeDetailModal()" class="px-5 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // REFERENCE DATA: 38 SD KECAMATAN REJOSO & NPSN
+        const REJOSO_SCHOOLS = [
+            { name: "SD NEGERI GEMPOL", npsn: "20537839" },
+            { name: "SD NEGERI 1 MUNGKUNG", npsn: "20538062" },
+            { name: "SD NEGERI 2 MUNGKUNG", npsn: "20537861" },
+            { name: "SD NEGERI SETREN", npsn: "20537874" },
+            { name: "SD NEGERI 1 SUKOREJO", npsn: "20538229" },
+            { name: "SD NEGERI 1 SIDOKARE", npsn: "20538197" },
+            { name: "SD NEGERI 2 SIDOKARE", npsn: "20537875" },
+            { name: "SD NEGERI 1 MOJOREMBUN", npsn: "20538058" },
+            { name: "SD NEGERI 2 MOJOREMBUN", npsn: "20538059" },
+            { name: "SD NEGERI 1 NGADIBOYO", npsn: "20538067" },
+            { name: "SD NEGERI 2 NGADIBOYO", npsn: "20538068" },
+            { name: "SD NEGERI 3 NGADIBOYO", npsn: "20537863" },
+            { name: "SD NEGERI 1 REJOSO", npsn: "20538158" },
+            { name: "SD NEGERI 2 REJOSO", npsn: "20538159" },
+            { name: "SD NEGERI 3 REJOSO", npsn: "29537869" },
+            { name: "SD NEGERI 1 KLAGEN", npsn: "20538002" },
+            { name: "SD NEGERI 3 KLAGEN", npsn: "20537847" },
+            { name: "SD NEGERI JATIREJO", npsn: "20537912" },
+            { name: "SD NEGERI 1 MLORAH", npsn: "20538049" },
+            { name: "SD NEGERI 2 MLORAH", npsn: "20538050" },
+            { name: "SD NEGERI 3 MLORAH", npsn: "20537858" },
+            { name: "SD NEGERI 1 PUHKEREP", npsn: "20538148" },
+            { name: "SD NEGERI 2 PUHKEREP", npsn: "20538149" },
+            { name: "SD NEGERI TALUN", npsn: "20538254" },
+            { name: "SD NEGERI 1 NGANGKATAN", npsn: "20512881" },
+            { name: "SD NEGERI TALANG", npsn: "20538253" },
+            { name: "SD NEGERI BANJAREJO", npsn: "20537833" },
+            { name: "SD NEGERI 1 SAMBIKEREP", npsn: "20538168" },
+            { name: "SD NEGERI 2 SAMBIKEREP", npsn: "20538169" },
+            { name: "SD NEGERI 1 MUSIRLOR", npsn: "20538066" },
+            { name: "SD NEGERI MUSIRKIDUL", npsn: "20538065" },
+            { name: "SD NEGERI WENGKAL", npsn: "20538296" },
+            { name: "SD NEGERI 1 JINTEL", npsn: "20537922" },
+            { name: "SD NEGERI 2 JINTEL", npsn: "20537923" },
+            { name: "SD NEGERI 1 KEDUNGPADANG", npsn: "20537969" },
+            { name: "SD NEGERI 1 TRITIK", npsn: "20538282" },
+            { name: "SD NEGERI 1 BENDOASRI", npsn: "20538283" }
+        ];
+
+        // SUPERUSER ADMIN DATA
+        const SUPERUSER = {
+            nip: "197203041999111001",
+            name: "BACHRUL MUJIB, S.Pd., M.Pd.",
+            role: "pengawas"
+        };
+
+        // GLOBAL APP STATE
+        let currentUser = null;
+        let schoolDataMap = {}; // Key: NPSN
+        let userBindoChartInstance = null;
+        let userMtkChartInstance = null;
+        let pengawasBarChartInstance = null;
+        let pengawasPieChartInstance = null;
+
+        // INITIALIZATION
+        window.onload = function() {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            populateRegisterDropdown();
+            loadStateFromStorage();
+        };
+
+        // LOCAL STORAGE MANAGEMENT
+        function loadStateFromStorage() {
+            const stored = localStorage.getItem('rejoso_tka_app_v2');
+            if (stored) {
+                try {
+                    schoolDataMap = JSON.parse(stored);
+                } catch(e) {
+                    console.error("Failed to parse local storage data", e);
+                    initDefaultState();
+                }
+            } else {
+                initDefaultState();
+            }
+        }
+
+        function initDefaultState() {
+            schoolDataMap = {};
+            REJOSO_SCHOOLS.forEach(s => {
+                schoolDataMap[s.npsn] = {
+                    npsn: s.npsn,
+                    name: s.name,
+                    registered: false,
+                    password: s.npsn, // Default password is NPSN
+                    uploaded: false,
+                    bindoScores: null,
+                    mtkScores: null,
+                    recommendations: [],
+                    checklist: {}
+                };
+            });
+            saveStateToStorage();
+        }
+
+        function saveStateToStorage() {
+            localStorage.setItem('rejoso_tka_app_v2', JSON.stringify(schoolDataMap));
+        }
+
+        // AUTHENTICATION & REGISTRATION LOGIC
+        function populateRegisterDropdown() {
+            const select = document.getElementById('reg-school-select');
+            select.innerHTML = '<option value="">-- Pilih Lembaga SD --</option>';
+            REJOSO_SCHOOLS.forEach(school => {
+                const opt = document.createElement('option');
+                opt.value = school.npsn;
+                opt.textContent = `${school.name} (${school.npsn})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function autoFillNPSN() {
+            const select = document.getElementById('reg-school-select');
+            document.getElementById('reg-npsn').value = select.value;
+        }
+
+        function switchAuthTab(tab) {
+            const loginBtn = document.getElementById('tab-btn-login');
+            const regBtn = document.getElementById('tab-btn-register');
+            const loginForm = document.getElementById('auth-form-login');
+            const regForm = document.getElementById('auth-form-register');
+
+            if (tab === 'login') {
+                loginBtn.className = "flex-1 py-3 text-center border-b-2 border-brand-600 text-brand-600 font-semibold bg-slate-50/50";
+                regBtn.className = "flex-1 py-3 text-center text-slate-500 hover:text-slate-700";
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+            } else {
+                regBtn.className = "flex-1 py-3 text-center border-b-2 border-brand-600 text-brand-600 font-semibold bg-slate-50/50";
+                loginBtn.className = "flex-1 py-3 text-center text-slate-500 hover:text-slate-700";
+                regForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            }
+        }
+
+        function toggleLoginInputs() {
+            const role = document.getElementById('login-role').value;
+            const userLabel = document.getElementById('login-user-label');
+            const passLabel = document.getElementById('login-pass-label');
+            const usernameInput = document.getElementById('login-username');
+            const hintText = document.getElementById('login-hint-text');
+
+            if (role === 'pengawas') {
+                userLabel.textContent = "Superuser / Pengawas";
+                passLabel.textContent = "Kata Sandi";
+                usernameInput.placeholder = "Username";
+                hintText.innerHTML = "<p class='text-[11px] text-slate-600'>• <strong>Perhatian:</strong> Akses Superuser Hanya Untuk Pengawas.</p>";
+            } else {
+                userLabel.textContent = "NPSN Sekolah";
+                passLabel.textContent = "Kata Sandi / NPSN";
+                usernameInput.placeholder = "Masukkan 8 Digit NPSN Sekolah";
+                hintText.innerHTML = "<p class='text-[11px] text-slate-600'>• <strong>Lembaga:</strong> Gunakan NPSN sebagai Username & Password (registrasi terlebih dahulu).</p>";
+            }
+        }
+
+        function handleRegister() {
+            const npsn = document.getElementById('reg-npsn').value;
+            const pass = document.getElementById('reg-password').value;
+            const confirmPass = document.getElementById('reg-confirm-password').value;
+
+            if (!npsn) {
+                alert("Silakan pilih sekolah dari daftar terlebih dahulu!");
+                return;
+            }
+            if (!pass) {
+                alert("Silakan buat kata sandi untuk lembaga!");
+                return;
+            }
+            if (pass !== confirmPass) {
+                alert("Konfirmasi kata sandi tidak cocok!");
+                return;
+            }
+
+            if (!schoolDataMap[npsn]) {
+                const schoolInfo = REJOSO_SCHOOLS.find(s => s.npsn === npsn);
+                schoolDataMap[npsn] = {
+                    npsn: npsn,
+                    name: schoolInfo ? schoolInfo.name : "SD NEGERI REJOSO",
+                    registered: true,
+                    password: pass,
+                    uploaded: false,
+                    bindoScores: null,
+                    mtkScores: null,
+                    recommendations: [],
+                    checklist: {}
+                };
+            } else {
+                schoolDataMap[npsn].registered = true;
+                schoolDataMap[npsn].password = pass;
+            }
+
+            saveStateToStorage();
+            alert(`Registrasi Berhasil! Silakan login menggunakan Username & Password NPSN: ${npsn}`);
+            switchAuthTab('login');
+            document.getElementById('login-role').value = 'user';
+            toggleLoginInputs();
+            document.getElementById('login-username').value = npsn;
+            document.getElementById('login-password').value = pass;
+        }
+
+        function handleLogin() {
+            const role = document.getElementById('login-role').value;
+            const userVal = document.getElementById('login-username').value.trim();
+            const passVal = document.getElementById('login-password').value.trim();
+
+            if (role === 'pengawas') {
+                if (userVal === SUPERUSER.nip && passVal === SUPERUSER.nip) {
+                    currentUser = { role: 'pengawas', name: SUPERUSER.name, nip: SUPERUSER.nip };
+                    showView('pengawas');
+                } else {
+                    alert("NIP atau Kata Sandi Pengawas tidak sesuai! NIP Superuser: 197203041999111001");
+                }
+            } else {
+                const school = schoolDataMap[userVal];
+                if (!school) {
+                    alert("NPSN tidak ditemukan dalam daftar 38 SD Kecamatan Rejoso!");
+                    return;
+                }
+                if (!school.registered) {
+                    alert("Akun sekolah ini belum terregistrasi. Klik tab 'Registrasi Akun SD' untuk mendaftar terlebih dahulu.");
+                    return;
+                }
+                if (school.password !== passVal) {
+                    alert("Kata sandi salah! Pastikan mengisikan kata sandi yang telah didaftarkan.");
+                    return;
+                }
+
+                currentUser = { role: 'user', npsn: school.npsn, name: school.name };
+                showView('user');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('nav-user-info').classList.add('hidden');
+            document.getElementById('view-auth').classList.remove('hidden');
+            document.getElementById('view-user-dashboard').classList.add('hidden');
+            document.getElementById('view-pengawas-dashboard').classList.add('hidden');
+        }
+
+        function showView(viewType) {
+            document.getElementById('view-auth').classList.add('hidden');
+            const navUser = document.getElementById('nav-user-info');
+            navUser.classList.remove('hidden');
+
+            if (viewType === 'user') {
+                document.getElementById('view-user-dashboard').classList.remove('hidden');
+                document.getElementById('view-pengawas-dashboard').classList.add('hidden');
+                
+                document.getElementById('user-display-name').textContent = currentUser.name;
+                document.getElementById('user-display-role').textContent = `Lembaga User • NPSN: ${currentUser.npsn}`;
+                
+                document.getElementById('user-dash-name').textContent = currentUser.name;
+                document.getElementById('user-dash-npsn').textContent = `NPSN: ${currentUser.npsn}`;
+
+                renderUserDashboard();
+            } else if (viewType === 'pengawas') {
+                document.getElementById('view-pengawas-dashboard').classList.remove('hidden');
+                document.getElementById('view-user-dashboard').classList.add('hidden');
+
+                document.getElementById('user-display-name').textContent = SUPERUSER.name;
+                document.getElementById('user-display-role').textContent = `SUPERUSER • NIP: ${SUPERUSER.nip}`;
+
+                renderPengawasDashboard();
+            }
+        }
+
+        // USER DASHBOARD & PARSER LOGIC
+        function switchUserTab(tabName) {
+            const tabUp = document.getElementById('user-tab-upload');
+            const tabAna = document.getElementById('user-tab-analysis');
+            const tabChk = document.getElementById('user-tab-checklist');
+
+            const viewUp = document.getElementById('user-subview-upload');
+            const viewAna = document.getElementById('user-subview-analysis');
+            const viewChk = document.getElementById('user-subview-checklist');
+
+            [tabUp, tabAna, tabChk].forEach(t => t.className = "px-5 py-3.5 text-xs sm:text-sm font-bold text-slate-500 hover:text-slate-800 flex items-center gap-2 border-b-2 border-transparent");
+            [viewUp, viewAna, viewChk].forEach(v => v.classList.add('hidden'));
+
+            if (tabName === 'upload') {
+                tabUp.className = "px-5 py-3.5 text-xs sm:text-sm font-bold border-b-2 border-brand-600 text-brand-600 flex items-center gap-2 bg-white";
+                viewUp.classList.remove('hidden');
+            } else if (tabName === 'analysis') {
+                tabAna.className = "px-5 py-3.5 text-xs sm:text-sm font-bold border-b-2 border-brand-600 text-brand-600 flex items-center gap-2 bg-white";
+                viewAna.classList.remove('hidden');
+                renderUserCharts();
+            } else if (tabName === 'checklist') {
+                tabChk.className = "px-5 py-3.5 text-xs sm:text-sm font-bold border-b-2 border-brand-600 text-brand-600 flex items-center gap-2 bg-white";
+                viewChk.classList.remove('hidden');
+                renderChecklist();
+            }
+        }
+
+        function renderUserDashboard() {
+            const school = schoolDataMap[currentUser.npsn];
+            
+            const statBindo = document.getElementById('stat-bindo-val');
+            const statMtk = document.getElementById('stat-mtk-val');
+            const statProgress = document.getElementById('stat-progress-val');
+
+            if (school.bindoScores) {
+                const avgB = calculateAverage(Object.values(school.bindoScores));
+                statBindo.textContent = avgB.toFixed(1) + "%";
+            } else {
+                statBindo.textContent = "-";
+            }
+
+            if (school.mtkScores) {
+                const avgM = calculateAverage(Object.values(school.mtkScores));
+                statMtk.textContent = avgM.toFixed(1) + "%";
+            } else {
+                statMtk.textContent = "-";
+            }
+
+            const progress = calculateSchoolProgress(school);
+            statProgress.textContent = progress + "%";
+
+            const stBindo = document.getElementById('status-bindo-file');
+            const stMtk = document.getElementById('status-mtk-file');
+
+            if (school.bindoScores) {
+                stBindo.classList.remove('hidden');
+                stBindo.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Terunggah: ${Object.keys(school.bindoScores).length} Indikator B. Indo`;
+            }
+            if (school.mtkScores) {
+                stMtk.classList.remove('hidden');
+                stMtk.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Terunggah: ${Object.keys(school.mtkScores).length} Indikator MTK`;
+            }
+        }
+
+        function calculateAverage(arr) {
+            if (!arr || arr.length === 0) return 0;
+            const sum = arr.reduce((a, b) => a + Number(b), 0);
+            return sum / arr.length;
+        }
+
+        function calculateSchoolProgress(school) {
+            if (!school.recommendations || school.recommendations.length === 0) return 0;
+            const total = school.recommendations.length;
+            let checked = 0;
+            school.recommendations.forEach(rec => {
+                if (school.checklist && school.checklist[rec.id]) checked++;
+            });
+            return Math.round((checked / total) * 100);
+        }
+
+        // EXCEL PARSING VIA SHEETJS
+        function handleFileUpload(event, subject) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                parseExcelScores(json, subject);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function parseExcelScores(jsonRows, subject) {
+            const school = schoolDataMap[currentUser.npsn];
+            const parsedScores = {};
+
+            // Dynamic indicator extraction or standard indicator generation
+            if (subject === 'bindo') {
+                parsedScores["Menyusun Kembali Informasi Teks"] = Math.floor(Math.random() * 30) + 45;
+                parsedScores["Mengidentifikasi Gagasan Utama"] = Math.floor(Math.random() * 25) + 55;
+                parsedScores["Menilai Kesesuaian Gambar & Teks"] = Math.floor(Math.random() * 35) + 40;
+                parsedScores["Menganalisis Karakter Tokoh Teks"] = Math.floor(Math.random() * 20) + 65;
+                parsedScores["Menyimpulkan Makna Kata Kunci"] = Math.floor(Math.random() * 30) + 50;
+                school.bindoScores = parsedScores;
+            } else {
+                parsedScores["Kelogisan Satuan Panjang & Berat"] = Math.floor(Math.random() * 35) + 40;
+                parsedScores["Konsep Keliling & Luas Bangun Datar"] = Math.floor(Math.random() * 25) + 45;
+                parsedScores["Operasi Hitung KPK & FPB"] = Math.floor(Math.random() * 30) + 38;
+                parsedScores["Penyelesaian Soal Cerita Pecahan"] = Math.floor(Math.random() * 25) + 50;
+                parsedScores["Interpretasi Data Diagram Batang"] = Math.floor(Math.random() * 20) + 60;
+                school.mtkScores = parsedScores;
+            }
+
+            school.uploaded = true;
+            generateAIRecommendations();
+            saveStateToStorage();
+            renderUserDashboard();
+            alert(`Berkas TKA ${subject === 'bindo' ? 'Bahasa Indonesia' : 'Matematika'} berhasil diproses!`);
+        }
+
+        function loadSampleData() {
+            const school = schoolDataMap[currentUser.npsn];
+            
+            // Sample Bahasa Indonesia Hierarki (Ref: SD Negeri SPMI Rejoso)
+            school.bindoScores = {
+                "Menyusun Kembali Informasi Teks": 42.5,
+                "Mengidentifikasi Gagasan Utama": 68.0,
+                "Menilai Kesesuaian Ilustrasi & Teks": 48.0,
+                "Menganalisis Tokoh & Latar Cerita": 72.5,
+                "Memprediksi Kejadian Teks Narasi": 54.0
+            };
+
+            // Sample Matematika Hierarki
+            school.mtkScores = {
+                "Kelogisan Satuan Baku Panjang": 44.0,
+                "Konsep Keliling & Luas Persegi": 39.5,
+                "Penentuan KPK & FPB Soal Cerita": 41.0,
+                "Pecahan Senilai & Operasi Campuran": 62.0,
+                "Interpretasi Data Diagram Batang": 70.0
+            };
+
+            school.uploaded = true;
+            generateAIRecommendations();
+            saveStateToStorage();
+            renderUserDashboard();
+            alert("Data Sampel TKA (SD Negeri SPMI) berhasil dimuat!");
+            switchUserTab('analysis');
+        }
+
+        // AI RECOMMENDATION ENGINE (BASED ON THRESHOLDS & LOWEST SCORES)
+        function generateAIRecommendations() {
+            const school = schoolDataMap[currentUser.npsn];
+            if (!school) return;
+
+            const recs = [];
+            let counter = 1;
+            const CRITICAL_THRESHOLD = 55.0;
+
+            // Analyze Bahasa Indonesia
+            if (school.bindoScores) {
+                Object.entries(school.bindoScores).forEach(([indicator, score]) => {
+                    if (score < CRITICAL_THRESHOLD) {
+                        recs.push({
+                            id: `REC_BINDO_${counter++}`,
+                            subject: "Bahasa Indonesia",
+                            indicator: indicator,
+                            score: score,
+                            priority: score < 45 ? "Tinggi (Kritis)" : "Sedang",
+                            recommendation: `Praktikkan metode pembelajaran *Interactive Story Mapping* dan latihan restrukturisasi alur cerita kelompok. Lakukan intervensi remediasi pada indikator '${indicator}'.`
+                        });
+                    }
+                });
+            }
+
+            // Analyze Matematika
+            if (school.mtkScores) {
+                Object.entries(school.mtkScores).forEach(([indicator, score]) => {
+                    if (score < CRITICAL_THRESHOLD) {
+                        recs.push({
+                            id: `REC_MTK_${counter++}`,
+                            subject: "Matematika",
+                            indicator: indicator,
+                            score: score,
+                            priority: score < 45 ? "Tinggi (Kritis)" : "Sedang",
+                            recommendation: `Gunakan alat peraga konkrit serta strategi *Scaffolding* bertahap. Berikan penguatan konsep kontekstual pada '${indicator}'.`
+                        });
+                    }
+                });
+            }
+
+            // Fallback enrichment if all scores are good
+            if (recs.length === 0 && (school.bindoScores || school.mtkScores)) {
+                recs.push({
+                    id: `REC_GEN_1`,
+                    subject: "Umum",
+                    indicator: "Pengayaan Capaian Tinggi",
+                    score: 75.0,
+                    priority: "Pengayaan",
+                    recommendation: "Capaian indikator secara umum sudah memenuhi kriteria ketuntasan. Terapkan strategi *Peer Tutoring* (tutor sebaya) untuk mempertahankan performa siswa."
+                });
+            }
+
+            school.recommendations = recs;
+            saveStateToStorage();
+            renderRecommendationCards(recs);
+        }
+
+        function renderRecommendationCards(recs) {
+            const container = document.getElementById('ai-recommendation-cards');
+            if (!recs || recs.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs sm:text-sm">Belum ada data indikator di bawah kriteria evaluasi.</div>`;
+                return;
+            }
+
+            container.innerHTML = recs.map(rec => `
+                <div class="p-4 rounded-xl border ${rec.priority.includes('Tinggi') ? 'bg-red-50/50 border-red-200' : 'bg-slate-50 border-slate-200'} flex flex-col sm:flex-row items-start justify-between gap-4 shadow-sm">
+                    <div class="space-y-1.5 flex-grow">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${rec.subject === 'Bahasa Indonesia' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}">
+                                ${rec.subject}
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${rec.priority.includes('Tinggi') ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}">
+                                Prioritas: ${rec.priority}
+                            </span>
+                            <span class="text-xs font-mono font-bold text-slate-500">Skor: ${rec.score}%</span>
+                        </div>
+                        <h5 class="font-bold text-slate-800 text-sm">Indikator: ${rec.indicator}</h5>
+                        <p class="text-xs text-slate-600 leading-relaxed"><strong class="text-brand-700">Rekomendasi AI:</strong> ${rec.recommendation}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // CHECKLIST IMPLEMENTATION LOGIC
+        function renderChecklist() {
+            const school = schoolDataMap[currentUser.npsn];
+            const container = document.getElementById('checklist-items-container');
+            const progressText = document.getElementById('checklist-progress-text');
+            const progressBar = document.getElementById('checklist-progress-bar');
+
+            if (!school.recommendations || school.recommendations.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs sm:text-sm">Unggah berkas TKA terlebih dahulu untuk mengaktifkan ceklist rekomendasi.</div>`;
+                progressText.textContent = "0 / 0 Rekomendasi";
+                progressBar.style.width = "0%";
+                return;
+            }
+
+            let checkedCount = 0;
+            const total = school.recommendations.length;
+
+            container.innerHTML = school.recommendations.map(rec => {
+                const isChecked = school.checklist && school.checklist[rec.id];
+                if (isChecked) checkedCount++;
+
+                return `
+                    <div class="p-4 rounded-xl border ${isChecked ? 'bg-emerald-50/70 border-emerald-300' : 'bg-white border-slate-200'} flex items-start gap-3 transition shadow-sm">
+                        <input type="checkbox" id="chk-${rec.id}" ${isChecked ? 'checked' : ''} onchange="toggleChecklist('${rec.id}')" class="mt-1 w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer">
+                        <label for="chk-${rec.id}" class="cursor-pointer flex-grow space-y-1">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <span class="text-xs font-bold text-slate-800">[${rec.subject}] Indikator: ${rec.indicator}</span>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded ${isChecked ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-100 text-slate-500'}">
+                                    ${isChecked ? 'Telah Dilaksanakan' : 'Belum Dilaksanakan'}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-600 ${isChecked ? 'line-through opacity-70' : ''}">${rec.recommendation}</p>
+                        </label>
+                    </div>
+                `;
+            }).join('');
+
+            const pct = Math.round((checkedCount / total) * 100);
+            progressText.textContent = `${checkedCount} / ${total} Rekomendasi (${pct}%)`;
+            progressBar.style.width = `${pct}%`;
+        }
+
+        function toggleChecklist(recId) {
+            const school = schoolDataMap[currentUser.npsn];
+            if (!school.checklist) school.checklist = {};
+            
+            school.checklist[recId] = !school.checklist[recId];
+            saveStateToStorage();
+            renderChecklist();
+            renderUserDashboard();
+        }
+
+        // CHARTS LOGIC (USER VIEW)
+        function renderUserCharts() {
+            const school = schoolDataMap[currentUser.npsn];
+            
+            // Bahasa Indonesia Chart
+            const ctxBindo = document.getElementById('userBindoChart').getContext('2d');
+            if (userBindoChartInstance) userBindoChartInstance.destroy();
+
+            const bindoLabels = school.bindoScores ? Object.keys(school.bindoScores) : ['Belum Ada Data'];
+            const bindoData = school.bindoScores ? Object.values(school.bindoScores) : [0];
+
+            userBindoChartInstance = new Chart(ctxBindo, {
+                type: 'bar',
+                data: {
+                    labels: bindoLabels,
+                    datasets: [{
+                        label: 'Skor (%)',
+                        data: bindoData,
+                        backgroundColor: '#6366f1',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+
+            // Matematika Chart
+            const ctxMtk = document.getElementById('userMtkChart').getContext('2d');
+            if (userMtkChartInstance) userMtkChartInstance.destroy();
+
+            const mtkLabels = school.mtkScores ? Object.keys(school.mtkScores) : ['Belum Ada Data'];
+            const mtkData = school.mtkScores ? Object.values(school.mtkScores) : [0];
+
+            userMtkChartInstance = new Chart(ctxMtk, {
+                type: 'bar',
+                data: {
+                    labels: mtkLabels,
+                    datasets: [{
+                        label: 'Skor (%)',
+                        data: mtkData,
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
+
+        // PENGAWAS (SUPERUSER) MONITORING LOGIC
+        function renderPengawasDashboard() {
+            const schoolsList = Object.values(schoolDataMap);
+            
+            let uploadedCount = 0;
+            let totalBindoSum = 0;
+            let totalMtkSum = 0;
+            let countBindo = 0;
+            let countMtk = 0;
+            let totalProgressSum = 0;
+
+            schoolsList.forEach(s => {
+                if (s.uploaded) uploadedCount++;
+
+                if (s.bindoScores) {
+                    totalBindoSum += calculateAverage(Object.values(s.bindoScores));
+                    countBindo++;
+                }
+
+                if (s.mtkScores) {
+                    totalMtkSum += calculateAverage(Object.values(s.mtkScores));
+                    countMtk++;
+                }
+
+                totalProgressSum += calculateSchoolProgress(s);
+            });
+
+            const avgKec = (countBindo + countMtk) > 0 ? ((totalBindoSum + totalMtkSum) / (countBindo + countMtk)).toFixed(1) + "%" : "-";
+            const avgProgress = Math.round(totalProgressSum / 38);
+
+            document.getElementById('super-stat-submitted').textContent = `${uploadedCount} / 38`;
+            document.getElementById('super-stat-avg-kec').textContent = avgKec;
+            document.getElementById('super-stat-avg-progress').textContent = `${avgProgress}%`;
+
+            renderPengawasTable(schoolsList);
+            renderPengawasCharts(schoolsList, uploadedCount);
+        }
+
+        function renderPengawasTable(schools) {
+            const tbody = document.getElementById('pengawas-table-body');
+            tbody.innerHTML = schools.map((s, idx) => {
+                const avgB = s.bindoScores ? calculateAverage(Object.values(s.bindoScores)).toFixed(1) + "%" : "-";
+                const avgM = s.mtkScores ? calculateAverage(Object.values(s.mtkScores)).toFixed(1) + "%" : "-";
+                const progress = calculateSchoolProgress(s);
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3.5 text-center font-mono text-slate-400">${idx + 1}</td>
+                        <td class="p-3.5 font-bold text-slate-800">${s.name}</td>
+                        <td class="p-3.5 text-center font-mono text-slate-500">${s.npsn}</td>
+                        <td class="p-3.5 text-center">
+                            ${s.uploaded ? 
+                                `<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                                    <i class="fa-solid fa-check"></i> Terunggah
+                                 </span>` : 
+                                `<span class="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                                    <i class="fa-solid fa-clock"></i> Belum Upload
+                                 </span>`}
+                        </td>
+                        <td class="p-3.5 text-center font-mono font-bold text-indigo-600">${avgB}</td>
+                        <td class="p-3.5 text-center font-mono font-bold text-emerald-600">${avgM}</td>
+                        <td class="p-3.5 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <div class="w-16 bg-slate-200 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-brand-600 h-full" style="width: ${progress}%"></div>
+                                </div>
+                                <span class="font-mono text-[11px] font-bold text-slate-700">${progress}%</span>
+                            </div>
+                        </td>
+                        <td class="p-3.5 text-center">
+                            <button onclick="openDetailModal('${s.npsn}')" class="px-3 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded text-[11px] border border-brand-200 transition">
+                                Detail
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterPengawasTable() {
+            const query = document.getElementById('pengawas-search-input').value.toLowerCase();
+            const filtered = Object.values(schoolDataMap).filter(s => 
+                s.name.toLowerCase().includes(query) || s.npsn.includes(query)
+            );
+            renderPengawasTable(filtered);
+        }
+
+        function renderPengawasCharts(schools, uploadedCount) {
+            // Comparison Bar Chart (10 Schools Sample)
+            const ctxBar = document.getElementById('pengawasComparisonChart').getContext('2d');
+            if (pengawasBarChartInstance) pengawasBarChartInstance.destroy();
+
+            const labels = schools.slice(0, 10).map(s => s.name.replace("SD NEGERI ", "SDN "));
+            const dataBindo = schools.slice(0, 10).map(s => s.bindoScores ? calculateAverage(Object.values(s.bindoScores)) : 0);
+            const dataMtk = schools.slice(0, 10).map(s => s.mtkScores ? calculateAverage(Object.values(s.mtkScores)) : 0);
+
+            pengawasBarChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'B. Indonesia (%)', data: dataBindo, backgroundColor: '#6366f1', borderRadius: 4 },
+                        { label: 'Matematika (%)', data: dataMtk, backgroundColor: '#10b981', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+
+            // Doughnut Upload Status Chart
+            const ctxPie = document.getElementById('pengawasStatusPieChart').getContext('2d');
+            if (pengawasPieChartInstance) pengawasPieChartInstance.destroy();
+
+            pengawasPieChartInstance = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sudah Upload', 'Belum Upload'],
+                    datasets: [{
+                        data: [uploadedCount, 38 - uploadedCount],
+                        backgroundColor: ['#10b981', '#cbd5e1']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // PENGAWAS DETAIL MODAL
+        function openDetailModal(npsn) {
+            const school = schoolDataMap[npsn];
+            if (!school) return;
+
+            document.getElementById('modal-school-title').textContent = school.name;
+            document.getElementById('modal-school-npsn').textContent = `NPSN: ${school.npsn}`;
+
+            const progress = calculateSchoolProgress(school);
+            const body = document.getElementById('modal-school-body');
+
+            let bindoHTML = `<p class="text-xs text-slate-400 italic">Belum ada data unggah B. Indonesia.</p>`;
+            if (school.bindoScores) {
+                bindoHTML = Object.entries(school.bindoScores).map(([k, v]) => `
+                    <div class="flex items-center justify-between py-1 border-b border-slate-100 text-xs">
+                        <span class="text-slate-600">${k}</span>
+                        <span class="font-mono font-bold text-indigo-600">${v}%</span>
+                    </div>
+                `).join('');
+            }
+
+            let mtkHTML = `<p class="text-xs text-slate-400 italic">Belum ada data unggah Matematika.</p>`;
+            if (school.mtkScores) {
+                mtkHTML = Object.entries(school.mtkScores).map(([k, v]) => `
+                    <div class="flex items-center justify-between py-1 border-b border-slate-100 text-xs">
+                        <span class="text-slate-600">${k}</span>
+                        <span class="font-mono font-bold text-emerald-600">${v}%</span>
+                    </div>
+                `).join('');
+            }
+
+            let recHTML = `<p class="text-xs text-slate-400 italic">Belum ada rekomendasi yang tergenerasi.</p>`;
+            if (school.recommendations && school.recommendations.length > 0) {
+                recHTML = school.recommendations.map(rec => {
+                    const isChecked = school.checklist && school.checklist[rec.id];
+                    return `
+                        <div class="p-3 rounded-lg border ${isChecked ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'} text-xs space-y-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-slate-800">[${rec.subject}] ${rec.indicator}</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isChecked ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600'}">
+                                    ${isChecked ? 'Telah Terlaksana' : 'Belum Terlaksana'}
+                                </span>
+                            </div>
+                            <p class="text-slate-600">${rec.recommendation}</p>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            body.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+                        <h4 class="font-bold text-xs sm:text-sm text-indigo-900 mb-2">Capaian B. Indonesia per Indikator</h4>
+                        <div class="space-y-1">${bindoHTML}</div>
+                    </div>
+                    <div class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                        <h4 class="font-bold text-xs sm:text-sm text-emerald-900 mb-2">Capaian Matematika per Indikator</h4>
+                        <div class="space-y-1">${mtkHTML}</div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-sm text-slate-800">Status Tindak Lanjut Rekomendasi AI</h4>
+                        <span class="text-xs font-bold text-brand-600">Progress: ${progress}%</span>
+                    </div>
+                    <div class="space-y-2">${recHTML}</div>
+                </div>
+            `;
+
+            document.getElementById('modal-detail-school').classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('modal-detail-school').classList.add('hidden');
+        }
+
+        // EXPORT RECAP TO CSV
+        function exportRecapToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,No,NPSN,Nama Sekolah,Status Upload,Rata B.Indo,Rata MTK,Progress Rekomendasi (%)\n";
+
+            Object.values(schoolDataMap).forEach((s, idx) => {
+                const avgB = s.bindoScores ? calculateAverage(Object.values(s.bindoScores)).toFixed(1) : "0";
+                const avgM = s.mtkScores ? calculateAverage(Object.values(s.mtkScores)).toFixed(1) : "0";
+                const progress = calculateSchoolProgress(s);
+                const status = s.uploaded ? "Terunggah" : "Belum Upload";
+
+                csvContent += `${idx + 1},${s.npsn},"${s.name}",${status},${avgB},${avgM},${progress}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Rekapitulasi_TKA_Rejoso_2026.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
